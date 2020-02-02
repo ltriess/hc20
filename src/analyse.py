@@ -28,18 +28,17 @@ def size_vs_capacity(servers):
     plt.show()
 
 
-def get_num_rows_slots(matrix):
+def matrix_stats(matrix):
     s = matrix.shape
 
     print("Number of rows {}".format(s[0]))
     print("Number of slots {}".format(s[1]))
 
-    return s
-
-
-def percentage_available_slots(matrix):
     print("{:.2f}% of slots are available".format(
-        100 * np.sum(matrix) / (matrix.shape[0] * matrix.shape[1])))
+        100 * np.sum(matrix) / (s[0] * s[1])))
+
+    plt.imshow(matrix)
+    plt.show()
 
 
 def order_servers(servers):
@@ -59,8 +58,7 @@ def main():
     print(pools)
 
     # size_vs_capacity(servers)
-    # get_num_rows_slots(unavailable)
-    # percentage_available_slots(unavailable)
+    # matrix_stats(unavailable)
 
 
 if __name__ == "__main__":
