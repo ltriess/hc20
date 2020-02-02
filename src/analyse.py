@@ -16,9 +16,11 @@ def size_vs_capacity(servers):
         x.append(size)
         y.append(capacity)
 
-    print("Sum capacity: {}".format(sum(y)))
-    print("Max capacity: {}, Min capacity: {}".format(max(y), min(y)))
+    print("__________ SERVERS __________")
     print("Number of servers: {}".format(len(servers)))
+    print("Size of servers: average {}, min {}, max {}".format(np.mean(x), np.min(x), np.max(x)))
+    print("Sum capacity: {}".format(sum(y)))
+    print("Capacity: min {}, max {}".format(min(y), max(y)))
 
     fig, ax = plt.subplots()
     ax.scatter(x, y)
@@ -31,9 +33,12 @@ def size_vs_capacity(servers):
 def matrix_stats(matrix):
     s = matrix.shape
 
-    print("Number of rows {}".format(s[0]))
-    print("Number of slots {}".format(s[1]))
+    print("__________ SLOTS __________")
+    print("Number of rows: {}".format(s[0]))
+    print("Number of slots per row: {}".format(s[1]))
 
+    print()
+    total_slots = []
     for i, row in enumerate(matrix):
         free = np.sum(row)
         broken = row.shape[0] - free
@@ -44,27 +49,38 @@ def matrix_stats(matrix):
             if col:
                 prev = True
             else:
-                if 0 < j < row.shape[0] - 1 and prev:
+                if 0 < j < s[1] - 1 and prev:
                     slots += 1
                 prev = False
 
-        size_slots = [0] * slots
+        slot_size = [0] * slots
         slot = 0
         prev = True
         for j, col in enumerate(row):
             if col:
-                size_slots[slot] += 1
+                slot_size[slot] += 1
                 prev = True
             else:
-                if 0 < j < row.shape[0] - 1 and prev:
+                if 0 < j < s[1] - 1 and prev:
                     slot += 1
                 prev = False
 
-        print("Row {}: free: {}, broken: {}, consecutive slots: {}, slot sizes: {}".format(
-            i, free, broken, slots, size_slots
+        total_slots.extend(slot_size)
+
+        print("Row {:2d}: free: {:3d}/{}, broken: {:3d}/{}, slots: {:2d} --> {} lengths".format(
+            i, free, s[1], broken, s[1], slots, slot_size
         ))
 
-    print("{:.2f}% of slots are available".format(
+    print()
+    avail_in_rows = np.sum(matrix, axis=1)
+    print("Number of available slots per row: average {}, min {}, max {} of {}".format(
+        np.mean(avail_in_rows), np.min(avail_in_rows), np.max(avail_in_rows), s[1]
+    ))
+    print("Number of free neighboring slots: average {:.2f}, min {}, max {}".format(
+        np.mean(total_slots), np.min(total_slots), np.max(total_slots)
+    ))
+
+    print("{:.2f}% of total slots are available".format(
         100 * np.sum(matrix) / (s[0] * s[1])))
 
     plt.imshow(matrix)
@@ -75,6 +91,7 @@ def total_server_size_over_matrix_size(matrix, servers):
     available_slots = np.sum(matrix)
     server_slots = sum([server["size"] for server in servers])
 
+    print()
     print("There are {} server slots and {} available slots".format(
         server_slots, available_slots
     ))
@@ -104,6 +121,7 @@ def max_possible_capa(matrix, servers):
     capa = simplified_capa(order_servers(servers))
     _, available_slots = total_server_size_over_matrix_size(matrix, servers)
 
+    print()
     print("The maximum sum of capacity if severs are distributed in available "
           "slots without any constrains".format(sum(capa[:available_slots])))
 
