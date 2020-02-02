@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
 import numpy as np
+import pathlib
 
 
 def load(example=True):
-    filename = "../in/dc.in"
+    filename = str(pathlib.Path(__file__).parent / 'in' / 'dc.in')
     if example:
-        filename = "../in/example.in"
+        filename = str(pathlib.Path(__file__).parent / 'in' / 'example.in')
     with open(filename, "r") as fin:
         lines = fin.readlines()
     lines = [line.strip() for line in lines]
