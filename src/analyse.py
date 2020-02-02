@@ -34,6 +34,36 @@ def matrix_stats(matrix):
     print("Number of rows {}".format(s[0]))
     print("Number of slots {}".format(s[1]))
 
+    for i, row in enumerate(matrix):
+        free = np.sum(row)
+        broken = row.shape[0] - free
+
+        slots = 1
+        prev = True
+        for j, col in enumerate(row):
+            if col:
+                prev = True
+            else:
+                if 0 < j < row.shape[0] - 1 and prev:
+                    slots += 1
+                prev = False
+
+        size_slots = [0] * slots
+        slot = 0
+        prev = True
+        for j, col in enumerate(row):
+            if col:
+                size_slots[slot] += 1
+                prev = True
+            else:
+                if 0 < j < row.shape[0] - 1 and prev:
+                    slot += 1
+                prev = False
+
+        print("Row {}: free: {}, broken: {}, consecutive slots: {}, slot sizes: {}".format(
+            i, free, broken, slots, size_slots
+        ))
+
     print("{:.2f}% of slots are available".format(
         100 * np.sum(matrix) / (s[0] * s[1])))
 
