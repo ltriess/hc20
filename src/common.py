@@ -72,6 +72,8 @@ def save(server_allocation, available, servers, nbr_pools, output_name="example"
             else:
                 fout.write("%s\n" % " ".join([str(alloc[k]) for k in key_output_order]))
 
+    return s
+
 
 def load_output(filename):
     filepath = osp.join(osp.dirname(__file__), "..", "out", filename)
