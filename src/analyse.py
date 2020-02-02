@@ -50,6 +50,15 @@ def order_servers(servers):
     return list(np.array(servers)[inds])[::-1]
 
 
+def total_server_size_over_matrix_size(matrix, servers):
+    available_slots = np.sum(matrix)
+    server_slots = sum([server["size"] for server in servers])
+
+    print("There are {} server slots and {} available slots".format(
+        server_slots, available_slots
+    ))
+
+
 def main():
     unavailable, servers, pools = load(example=False)
 
@@ -59,6 +68,7 @@ def main():
 
     # size_vs_capacity(servers)
     # matrix_stats(unavailable)
+    total_server_size_over_matrix_size(unavailable, servers)
 
 
 if __name__ == "__main__":
