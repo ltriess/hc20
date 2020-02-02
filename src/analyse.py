@@ -11,8 +11,14 @@ def size_vs_capacity(servers):
     x = []
     y = []
     for server in servers:
-        x.append(server["size"])
-        y.append(server["capacity"])
+        size = server["size"]
+        capacity = server["capacity"]
+        x.append(size)
+        y.append(capacity)
+
+    print("Sum capacity: {}".format(sum(y)))
+    print("Max capacity: {}, Min capacity: {}".format(max(y), min(y)))
+    print("Number of servers: {}".format(len(servers)))
 
     fig, ax = plt.subplots()
     ax.scatter(x, y)
