@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 from src.common import load
 
@@ -30,6 +31,11 @@ def get_num_rows_slots(matrix):
     return s
 
 
+def percentage_available_slots(matrix):
+    print("{:.2f}% of slots are available".format(
+        100 * np.sum(matrix) / (matrix.shape[0] * matrix.shape[1])))
+
+
 def main():
     unavailable, servers, pools = load(example=False)
 
@@ -38,7 +44,8 @@ def main():
     print(pools)
 
     # size_vs_capacity(servers)
-    get_num_rows_slots(unavailable)
+    # get_num_rows_slots(unavailable)
+    # percentage_available_slots(unavailable)
 
 
 if __name__ == "__main__":
