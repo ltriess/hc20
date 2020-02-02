@@ -2,23 +2,30 @@
 
 import pathlib
 import numpy as np
-from src.common import load
+from src.common import load, save
 import itertools
 
 
-def solution_dummy():
-    available, servers, p = load(example=True)
-
+def solution_dummy(available, servers, p):
     # available_servers = np.ones(shape=(len(servers), ), dtype=np.bool)
 
-    servers_with_ratio = [{**x, 'ratio': x['capacity'] / x['size']} for x in servers]
-    servers_by_ratio = sorted(servers_with_ratio, key=lambda i: i['ratio'],
-                              reverse=True)
+    servers_with_ratio = [{**x, "ratio": x["capacity"] / x["size"]} for x in servers]
+    servers_by_ratio = sorted(
+        servers_with_ratio, key=lambda i: i["ratio"], reverse=True
+    )
 
     free_slots = []
     free_slot_starts = []
-    starts = np.diff(np.concatenate((np.zeros(shape=(available.shape[0], 1), dtype=np.int32),
-                                     available.astype(np.int32)), axis=-1))
+    starts = np.diff(
+        np.concatenate(
+            (
+                np.zeros(shape=(available.shape[0], 1), dtype=np.int32),
+                available.astype(np.int32),
+            ),
+            axis=-1,
+        )
+    )
+    starts = starts == 1
 
     free_slot_indices = []
 
@@ -31,42 +38,64 @@ def solution_dummy():
         indices = np.stack((np.repeat(i, indices.shape[0]), indices[..., 0]), axis=1)
         free_slot_indices.append(indices)
 
+
     free_slot_lengths = np.concatenate(free_slots, axis=0)
     free_slot_indices = np.concatenate(free_slot_indices, axis=0)
 
-    def use_slot(index, serversize, server_dict):
-        server_dict['row'] = free_slot_indices[index, 0]
-        server_dict['left_slot'] = free_slot_indices[index, 1]
+    # free_slot_indices[:, 1] + free_slot_lengths
 
-        if serversize == free_slot_lengths[index]:
-            np.delete(free_slot_lengths, index, 0)
-            np.delete(free_slot_indices, index, 0)
+    def use_slot(index, serversize, server_dict, lengths, indices):
+        server_dict["row"] = indices[index, 0]
+        server_dict["left_slot"] = indices[index, 1]
+
+        if server_dict['id'] == 0:
+            print('x')
+
+        if serversize == lengths[index]:
+            updated_lengths = np.delete(lengths, index, 0)
+            updated_indices = np.delete(indices, index, 0)
         else:
-            free_slot_lengths[index] -= serversize
-            free_slot_indices[index, 1] += serversize
+            lengths[index] -= serversize
+            indices[index, 1] += serversize
+            updated_lengths = lengths
+            updated_indices = indices
+
+        return updated_lengths, updated_indices
 
     pool_count = 0
     for server in servers_by_ratio:
-        if server['size'] > np.max(free_slots):
-            server['row'] = -1
-            server['left_slot'] = -1
-            server['pool_id'] = -1
+        if free_slot_lengths.size == 0 or server["size"] > np.max(free_slot_lengths):
+            server["row"] = -1
+            server["left_slot"] = -1
+            server["pool_id"] = -1
             continue
 
-        exact_fits = free_slot_lengths == server['size']
+        exact_fits = free_slot_lengths == server["size"]
         if np.any(exact_fits):
-            use_slot(index=np.argwhere(exact_fits)[0, 0], serversize=server['size'],
-                     server_dict=server)
+            free_slot_lengths, free_slot_indices = use_slot(
+                index=np.argwhere(exact_fits)[0, 0],
+                serversize=server["size"],
+                server_dict=server,
+                lengths=free_slot_lengths,
+                indices=free_slot_indices,
+            )
         else:
-            larger_fits = free_slot_lengths > server['size']
-            use_slot(index=np.argwhere(larger_fits)[0, 0], serversize=server['size'],
-                     server_dict=server)
-
-        server['pool_id'] = pool_count % p
+            larger_fits = free_slot_lengths > server["size"]
+            assert np.any(larger_fits)
+            free_slot_lengths, free_slot_indices = use_slot(
+                index=np.argwhere(larger_fits)[0, 0],
+                serversize=server["size"],
+                server_dict=server,
+                lengths=free_slot_lengths,
+                indices=free_slot_indices,
+            )
+        server["pool_id"] = pool_count % p
         pool_count += 1
 
     return servers_by_ratio
 
 
 if __name__ == "__main__":
-    solution_dummy()
+    available, servers, p = load(example=False)
+    server_dict = solution_dummy(available, servers, p)
+    save(server_dict, available, servers, p, "solution_dummy")
