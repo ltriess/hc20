@@ -5,9 +5,9 @@ import pathlib
 
 
 def load(example=True):
-    filename = str(pathlib.Path(__file__).parent / 'in' / 'dc.in')
+    filename = str(pathlib.Path(__file__).parent.parent / 'in' / 'dc.in')
     if example:
-        filename = str(pathlib.Path(__file__).parent / 'in' / 'example.in')
+        filename = str(pathlib.Path(__file__).parent.parent / 'in' / 'example.in')
     with open(filename, "r") as fin:
         lines = fin.readlines()
     lines = [line.strip() for line in lines]
