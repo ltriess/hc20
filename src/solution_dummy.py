@@ -8,7 +8,8 @@ import itertools
 
 def solution_dummy(available, servers, p,
                    shuffle_free_positions: bool = False,
-                   use_smallest_possible_fit: bool = False):
+                   use_smallest_possible_fit: bool = False,
+                   use_slot_voting: bool = True):
     # available_servers = np.ones(shape=(len(servers), ), dtype=np.bool)
 
     servers_with_ratio = [{**x, "ratio": x["capacity"] / x["size"]} for x in servers]
@@ -66,7 +67,7 @@ def solution_dummy(available, servers, p,
         return updated_lengths, updated_indices
 
     pool_count = 0
-    capacity_per_row = np.zeros((16,), np.int32)
+    capacity_per_row = np.zeros((available.shape[0],), np.int32)
 
     for server in servers_by_ratio:
         if free_slot_lengths.size == 0 or server["size"] > np.max(free_slot_lengths):
@@ -75,25 +76,26 @@ def solution_dummy(available, servers, p,
             server["pool_id"] = -1
             continue
 
-        exact_fits = free_slot_lengths == server["size"]
-        if np.any(exact_fits):
-            free_slot_lengths, free_slot_indices = use_slot(
-                index=np.argwhere(exact_fits)[0, 0],
-                serversize=server["size"],
-                server_dict=server,
-                lengths=free_slot_lengths,
-                indices=free_slot_indices,
-            )
-        else:
-            if use_smallest_possible_fit:
-                space_overhead = free_slot_lengths - server['size']
-                space_overhead[space_overhead < 0] = 100000
-                index = np.argmin(space_overhead)
-            else:
-                larger_fits = free_slot_lengths > server["size"]
-                assert np.any(larger_fits)
-                index = np.argwhere(larger_fits)[0, 0]
+        if use_slot_voting:
+            # server size in [1, 5]
+            slot_length_voting = free_slot_lengths - server['size']
+            invalid_slots = slot_length_voting < 0
+            # slot_length_voting[slot_length_voting < 0] = 10000
+            # best is 5
+            slot_length_voting = 5 - slot_length_voting
+            slot_length_voting = np.clip(slot_length_voting, 0, 5)
 
+            capacity_voting = capacity_per_row.shape[0] - \
+                              np.argsort(np.argsort(capacity_per_row)) - 1
+            capacity_voting = capacity_voting[free_slot_indices[:, 0]]
+
+            slot_length_voting = slot_length_voting.astype(np.float32)
+            capacity_voting = capacity_voting.astype(np.float32)
+
+            voting = slot_length_voting * 1.0 + capacity_voting
+
+            voting[invalid_slots] = -1e10
+            index = np.argmax(voting)
             free_slot_lengths, free_slot_indices = use_slot(
                 index=index,
                 serversize=server["size"],
@@ -101,6 +103,34 @@ def solution_dummy(available, servers, p,
                 lengths=free_slot_lengths,
                 indices=free_slot_indices,
             )
+
+        else:
+            exact_fits = free_slot_lengths == server["size"]
+            if np.any(exact_fits):
+                free_slot_lengths, free_slot_indices = use_slot(
+                    index=np.argwhere(exact_fits)[0, 0],
+                    serversize=server["size"],
+                    server_dict=server,
+                    lengths=free_slot_lengths,
+                    indices=free_slot_indices,
+                )
+            else:
+                if use_smallest_possible_fit:
+                    space_overhead = free_slot_lengths - server['size']
+                    space_overhead[space_overhead < 0] = 100000
+                    index = np.argmin(space_overhead)
+                else:
+                    larger_fits = free_slot_lengths > server["size"]
+                    assert np.any(larger_fits)
+                    index = np.argwhere(larger_fits)[0, 0]
+
+                free_slot_lengths, free_slot_indices = use_slot(
+                    index=index,
+                    serversize=server["size"],
+                    server_dict=server,
+                    lengths=free_slot_lengths,
+                    indices=free_slot_indices,
+                )
 
         capacity_per_row[server['row']] += server['capacity']
 
@@ -118,7 +148,8 @@ def solution_dummy(available, servers, p,
     #     capacity_per_row[r] = sum(
     #         [x["capacity"] for x in servers_by_ratio if x["row"] == r]
     #     )
-    print(capacity_per_row)
+    print("Row capacities: {}".format(capacity_per_row))
+    print("Max row capacity: {}".format(np.max(capacity_per_row)))
     return servers_by_ratio
 
 
