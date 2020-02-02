@@ -45,7 +45,15 @@ def load(example=True):
     return available, servers, p
 
 
+def normalize_output(server_allocation, m):
+    normalized = [{"left_slot": -1, "pool_id": -1, "row": -1} for _ in range(m)]
+    for alloc in server_allocation:
+        normalized[alloc["id"]] = {k: alloc[k] for k in key_output_order}
+    return normalized
+
+
 def save(server_allocation, available, servers, nbr_pools, output_name="example"):
+    server_allocation = normalize_output(server_allocation, len(servers))
     s = score(server_allocation, available, servers, nbr_pools)
     m = len(server_allocation)
     assert m >= 1
