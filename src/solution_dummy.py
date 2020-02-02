@@ -6,7 +6,7 @@ from src.common import load, save
 import itertools
 
 
-def solution_dummy(available, servers, p):
+def solution_dummy(available, servers, p, shuffle_free_positions: bool = False):
     # available_servers = np.ones(shape=(len(servers), ), dtype=np.bool)
 
     servers_with_ratio = [{**x, "ratio": x["capacity"] / x["size"]} for x in servers]
@@ -38,18 +38,19 @@ def solution_dummy(available, servers, p):
         indices = np.stack((np.repeat(i, indices.shape[0]), indices[..., 0]), axis=1)
         free_slot_indices.append(indices)
 
-
     free_slot_lengths = np.concatenate(free_slots, axis=0)
     free_slot_indices = np.concatenate(free_slot_indices, axis=0)
 
-    # free_slot_indices[:, 1] + free_slot_lengths
+    if shuffle_free_positions:
+        # SHUFFLE
+        slot_indices = np.arange(0, free_slot_lengths.shape[0])
+        np.random.shuffle(slot_indices)
+        free_slot_lengths = free_slot_lengths[slot_indices]
+        free_slot_indices = free_slot_indices[slot_indices]
 
     def use_slot(index, serversize, server_dict, lengths, indices):
         server_dict["row"] = indices[index, 0]
         server_dict["left_slot"] = indices[index, 1]
-
-        if server_dict['id'] == 0:
-            print('x')
 
         if serversize == lengths[index]:
             updated_lengths = np.delete(lengths, index, 0)
@@ -91,6 +92,19 @@ def solution_dummy(available, servers, p):
             )
         server["pool_id"] = pool_count % p
         pool_count += 1
+
+    print(
+        "Used capacity: {}".format(
+            sum([x["capacity"] for x in servers_by_ratio if x["row"] != -1])
+        )
+    )
+
+    capacity_per_row = np.zeros((16,), np.int32)
+    for r in range(available.shape[0]):
+        capacity_per_row[r] = sum(
+            [x["capacity"] for x in servers_by_ratio if x["row"] == r]
+        )
+    print(capacity_per_row)
 
     return servers_by_ratio
 
