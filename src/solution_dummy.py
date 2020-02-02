@@ -6,7 +6,9 @@ from src.common import load, save
 import itertools
 
 
-def solution_dummy(available, servers, p, shuffle_free_positions: bool = False):
+def solution_dummy(available, servers, p,
+                   shuffle_free_positions: bool = False,
+                   use_smallest_possible_fit: bool = False):
     # available_servers = np.ones(shape=(len(servers), ), dtype=np.bool)
 
     servers_with_ratio = [{**x, "ratio": x["capacity"] / x["size"]} for x in servers]
@@ -64,6 +66,8 @@ def solution_dummy(available, servers, p, shuffle_free_positions: bool = False):
         return updated_lengths, updated_indices
 
     pool_count = 0
+    capacity_per_row = np.zeros((16,), np.int32)
+
     for server in servers_by_ratio:
         if free_slot_lengths.size == 0 or server["size"] > np.max(free_slot_lengths):
             server["row"] = -1
@@ -81,15 +85,26 @@ def solution_dummy(available, servers, p, shuffle_free_positions: bool = False):
                 indices=free_slot_indices,
             )
         else:
-            larger_fits = free_slot_lengths > server["size"]
-            assert np.any(larger_fits)
+            if use_smallest_possible_fit:
+                space_overhead = free_slot_lengths - server['size']
+                space_overhead[space_overhead < 0] = 100000
+                index = np.argmin(space_overhead)
+            else:
+                larger_fits = free_slot_lengths > server["size"]
+                assert np.any(larger_fits)
+                index = np.argwhere(larger_fits)[0, 0]
+
             free_slot_lengths, free_slot_indices = use_slot(
-                index=np.argwhere(larger_fits)[0, 0],
+                index=index,
                 serversize=server["size"],
                 server_dict=server,
                 lengths=free_slot_lengths,
                 indices=free_slot_indices,
             )
+
+        capacity_per_row[server['row']] += server['capacity']
+
+        # dummy pool id
         server["pool_id"] = pool_count % p
         pool_count += 1
 
@@ -99,13 +114,11 @@ def solution_dummy(available, servers, p, shuffle_free_positions: bool = False):
         )
     )
 
-    capacity_per_row = np.zeros((16,), np.int32)
-    for r in range(available.shape[0]):
-        capacity_per_row[r] = sum(
-            [x["capacity"] for x in servers_by_ratio if x["row"] == r]
-        )
+    # for r in range(available.shape[0]):
+    #     capacity_per_row[r] = sum(
+    #         [x["capacity"] for x in servers_by_ratio if x["row"] == r]
+    #     )
     print(capacity_per_row)
-
     return servers_by_ratio
 
 
