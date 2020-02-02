@@ -14,13 +14,17 @@ def load(example=True):
     lines = lines[1:]
     ulines = lines[:u]
     mlines = lines[u:]
-    assert len(lines) == m
-    unavailable = np.ones((r, s), dtype=np.bool)
+    assert len(mlines) == m
+    available = np.ones((r, s), dtype=np.bool)
     for uline in ulines:
-        ri, si = uline.split(" ")
-        unavailable[ri, si] = False
+        ri, si = map(int, uline.split(" "))
+        available[ri, si] = False
     servers = []
     for i, mline in enumerate(mlines):
-        zi, ci = mline.split(" ")
+        zi, ci = map(int, mline.split(" "))
         servers.append({"id": i, "size": zi, "capacity": ci})
-    return unavailable, servers
+    return available, servers, p
+
+
+if __name__ == "__main__":
+    print(load(example=True))
