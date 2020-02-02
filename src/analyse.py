@@ -36,6 +36,15 @@ def percentage_available_slots(matrix):
         100 * np.sum(matrix) / (matrix.shape[0] * matrix.shape[1])))
 
 
+def order_servers(servers):
+    s_cs = []
+    for server in servers:
+        s_cs.append(server["capacity"] / server["size"])
+
+    inds = np.argsort(s_cs)
+    return list(np.array(servers)[inds])[::-1]
+
+
 def main():
     unavailable, servers, pools = load(example=False)
 
