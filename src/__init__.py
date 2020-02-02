@@ -1,7 +1,7 @@
 from .common import load
-from .analyse import main
+from .analyse import size_vs_capacity
 
 __all__ = [
     "load",
-    "analyse"
+    "size_vs_capacity"
 ]
