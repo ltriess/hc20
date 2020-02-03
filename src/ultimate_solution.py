@@ -2,7 +2,15 @@
 
 import numpy as np
 import datetime
-from src.common import load, save
+from src.common import (
+    load,
+    save,
+    score,
+    normalize_output,
+    check_if_allocation_fits,
+    load_output,
+)
+from numba import njit
 
 
 def get_available_index(bool_array):
@@ -40,7 +48,9 @@ def get_first_available_slot_with_sufficient_size(row_availability_mask, server_
 def main():
     input_stuff = load(False)
     available, servers, num_pools = load(False)
-    print(servers)
+
+    """
+    print("Solving")
     max_iterations = 1e6
     num_it = 0
     server_available_for_placement = np.ones([len(servers)], dtype=np.bool)
@@ -82,9 +92,90 @@ def main():
             solution.append(sol_entry)
 
         num_it += 1
-    print(solution)
+    """
 
-    save(solution, *input_stuff, output_name="ultimate_solution")
+    server_allocation = load_output("solution_dummy_000299_152041.out")
+    for el in range(len(server_allocation)):
+        server_allocation[el]["id"] = el
+    server_available_for_placement = np.array(
+        [el["pool_id"] < 0 for el in server_allocation]
+    )
+    solution = server_allocation
+    available = np.zeros_like(available, dtype=bool)
+
+    def get_critical_pool_id(server_allocation, available, servers, nbr_pools):
+        m = len(servers)
+        assert len(server_allocation) == m
+        check_if_allocation_fits(server_allocation, available, servers)
+        row_capacities = np.zeros([available.shape[0], nbr_pools], dtype=np.int)
+        for i in range(m):
+            if server_allocation[i]["row"] == -1:
+                continue
+            row_capacities[
+                server_allocation[i]["row"], server_allocation[i]["pool_id"]
+            ] += servers[i]["capacity"]
+        gc = row_capacities.sum(axis=0) - row_capacities.max(axis=0)
+        return gc.argmin()
+
+    cur_best_sol = server_allocation.copy()
+    cur_best_score = -1
+    for i in range(10000):
+        critical_pool_id = get_critical_pool_id(solution, *input_stuff)
+        critical_servers = [el for el in solution if el["pool_id"] == critical_pool_id]
+        weakest_critical_server = np.argmin(
+            np.array([server["id"] for server in critical_servers])
+        )
+
+        random_server_idx = get_available_index(server_available_for_placement)
+
+        if random_server_idx < 0:
+            print("All servers allocated!")
+            break
+        else:
+            pass
+
+        critical_server_size = servers[weakest_critical_server]["size"]
+
+        available[
+            critical_servers[weakest_critical_server]["row"],
+            critical_servers[weakest_critical_server]["left_slot"] : critical_servers[
+                weakest_critical_server
+            ]["left_slot"]
+            + critical_server_size,
+        ] = True
+        first_suitable_index = get_first_available_slot_with_sufficient_size(
+            available[critical_servers[weakest_critical_server]["row"]],
+            servers[random_server_idx]["size"],
+        )
+
+        if first_suitable_index < 0:
+            continue
+        else:
+            solution[weakest_critical_server] = servers[random_server_idx]
+            solution[weakest_critical_server]["id"] = random_server_idx
+            solution[weakest_critical_server]["row"] = critical_servers[
+                weakest_critical_server
+            ]["row"]
+            solution[weakest_critical_server]["left_slot"] = critical_servers[
+                weakest_critical_server
+            ]["left_slot"]
+            solution[weakest_critical_server]["pool_id"] = critical_servers[
+                weakest_critical_server
+            ]["pool_id"]
+            server_available_for_placement[random_server_idx] = False
+            available[
+                critical_servers[weakest_critical_server]["row"],
+                first_suitable_index : first_suitable_index
+                + servers[random_server_idx]["size"],
+            ] = False
+
+            local_score = score(solution, *input_stuff)
+            print("New score {}".format(local_score))
+            if local_score > cur_best_score:
+                cur_best_sol = solution.copy()
+                cur_best_score = local_score
+
+    save(cur_best_sol, *input_stuff, output_name="ultimate_solution")
 
 
 if __name__ == "__main__":
