@@ -69,7 +69,7 @@ def save(output, method_name="example", ds_name="example"):
     # pack output dict into list of lists of values (corresponding to rows)
     output_lists = []
     writevalues(output_lists, outfilename)
-    return s
+    return s, outfilename
 
 
 def load_output(filename):
@@ -91,7 +91,9 @@ if __name__ == "__main__":
     example_input = load("example")
     print(example_input)
     example_output = {}
-    save(example_output, method_name="test", ds_name="example")
+    score_value, filename = save(
+        example_output, method_name="method", ds_name="example"
+    )
     print(score(example_output, example_input))
-    example_output = load_output("task_example.out")
+    example_output = load_output(filename)
     print(example_output)
