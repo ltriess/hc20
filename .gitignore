@@ -134,3 +134,4 @@ setup.cfg
 out
 .venv/
 .idea/
+.tags
