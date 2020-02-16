@@ -91,7 +91,7 @@ if __name__ == "__main__":
     example_input = load("example")
     print(example_input)
     example_output = {}
-    save(example_output, output_name="test")
+    save(example_output, method_name="test", ds_name="example")
     print(score(example_output, example_input))
     example_output = load_output("task_example.out")
     print(example_output)
