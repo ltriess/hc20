@@ -6,16 +6,15 @@ from common import load, save
 
 def compute_nbr_books_processable(lib, days_left: int, books_to_scan_left: set):
     days_left -= lib["t"]
-    max_books = days_left * lib["m"]
+    max_books = max(days_left * lib["m"], 0)
     interesting_books_in_lib = lib["ids"] & books_to_scan_left
     result = min(max_books, len(interesting_books_in_lib))
-    print("nbr books processable", result)
     return result
 
 
 def get_lib_to_output(lib, days_left: int, books_to_scan_left: set, scores: list):
     days_left -= lib["t"]
-    max_books = days_left * lib["m"]
+    max_books = max(0, days_left * lib["m"])
     interesting_books_in_lib = lib["ids"] & books_to_scan_left
     logged_books = sorted(interesting_books_in_lib, key=lambda idx: -scores[idx])[
         :max_books
@@ -33,13 +32,16 @@ def main(ds_name="a_example"):
     output = []
     days_left = data["D"]
     scores = data["S"]
-    while num_books_added_by_last_lib > 0 and len(unused_libs) > 0:
+    while num_books_added_by_last_lib > 0 and len(unused_libs) > 0 and days_left >= 0:
+        print("start next days left", days_left)
         sel_lib = max(
             unused_libs,
             key=lambda lib: compute_nbr_books_processable(
                 lib, days_left=days_left, books_to_scan_left=books_left
             ),
         )
+        if days_left - sel_lib["t"] <= 0:
+            break
         del unused_libs[unused_libs.index(sel_lib)]
         output.append(
             get_lib_to_output(
@@ -49,8 +51,8 @@ def main(ds_name="a_example"):
                 scores=scores,
             )
         )
-        days_left -= sel_lib["t"]
         print("sel_lib", sel_lib)
+        days_left -= sel_lib["t"]
         print("days_left", days_left)
         num_books_added_by_last_lib = len(output[-1]["ids"])
         print("num_books_added_by_last_lib", num_books_added_by_last_lib)
@@ -60,5 +62,6 @@ def main(ds_name="a_example"):
 if __name__ == "__main__":
     from src.solution_super_simple import dsets
 
+    # main()
     for dset in dsets:
         main(dset)

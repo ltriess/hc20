@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-zip -r hc20.zip src
+zip -r out/hc20.zip src
