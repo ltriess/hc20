@@ -105,7 +105,7 @@ def save(output, method_name="example", ds_name="example"):
     )
 
     try:
-        output = output['libs']
+        output = output["libs"]
     except:
         pass
 
@@ -137,7 +137,7 @@ def score(output, data):
     all_books = set()
 
     try:
-        output = output['libs']
+        output = output["libs"]
     except:
         pass
 
@@ -149,26 +149,35 @@ def score(output, data):
                 )
             )
         all_books = all_books.union(lib["ids"])
-    
+
     score = 0
 
     day_start = 0
     for lib in output:
-        i = lib['index']
-        l = data['libs'][i]
-        assert l['index'] == i
-        day_start += l['t']
+        i = lib["index"]
+        l = data["libs"][i]
+        assert l["index"] == i
+        day_start += l["t"]
 
-        if len(lib['ids']) % l['m'] == 0:
-            days_necessary = len(lib['ids']) // l['m']
+        if len(lib["ids"]) % l["m"] == 0:
+            days_necessary = len(lib["ids"]) // l["m"]
         else:
-            days_necessary = len(lib['ids']) // l['m'] + 1
+            days_necessary = len(lib["ids"]) // l["m"] + 1
 
-        if days_necessary > data['D'] - day_start:
-            raise RuntimeError("too many books!")
+        if days_necessary > data["D"] - day_start:
+            raise RuntimeError(
+                "too many books in library {}!. Signup finished"
+                "in day {}. Books in libarary: {}. Days necessary: {}. Days left: {}".format(
+                    lib["index"],
+                    day_start,
+                    len(lib["ids"]),
+                    days_necessary,
+                    data["D"] - day_start,
+                )
+            )
 
-        for book_id in lib['ids']:
-            score += data['S'][book_id]
+        for book_id in lib["ids"]:
+            score += data["S"][book_id]
 
     return score
 
