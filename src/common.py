@@ -74,6 +74,19 @@ def load(ds_name):
         data['T'].append(t)
         data['M'].append(m)
 
+    data['libs'] = [{
+        'index': i,
+        'n': data['N'][i],
+        't': data['T'][i],
+        'm': data['M'][i],
+        'ids': data['ids'][i],
+    } for i in range(data['L'])]
+
+    del data['ids']
+    del data['N']
+    del data['T']
+    del data['M']
+
     return data
 
 
