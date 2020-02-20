@@ -14,6 +14,7 @@ dset_d = "d_tough_choices"
 dset_e = "e_so_many_books"
 dset_f = "f_libraries_of_the_world"
 dsets = [dset_a, dset_b, dset_c, dset_d, dset_e, dset_f]
+rel_dsets = [dset_c, dset_e, dset_f]
 
 if __name__ == "__main__":
 

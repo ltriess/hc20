@@ -2,6 +2,7 @@
 
 import os.path as osp
 import time
+
 import numpy as np
 
 
@@ -93,15 +94,21 @@ def load(ds_name):
     return data
 
 
-def save(output, method_name="example", ds_name="example"):
+def save(output, method_name="example", ds_name="example", postfix=""):
     data = load(ds_name)
     s = score(output, data)
     outfilename = osp.join(
         osp.dirname(__file__),
         "..",
         "out",
-        "%s_%s_%012d_%s.out"
-        % (ds_name, method_name, s, get_time_stamp(with_date=False, with_delims=False)),
+        "%s_%s_%012d%s_%s.out"
+        % (
+            ds_name,
+            method_name,
+            s,
+            postfix,
+            get_time_stamp(with_date=False, with_delims=False),
+        ),
     )
 
     try:
