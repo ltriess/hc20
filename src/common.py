@@ -103,6 +103,12 @@ def save(output, method_name="example", ds_name="example"):
         "%s_%s_%06d_%s.out"
         % (ds_name, method_name, s, get_time_stamp(with_date=False, with_delims=False)),
     )
+
+    try:
+        output = output['libs']
+    except:
+        pass
+
     # Todo pack output dict into list of lists of values (corresponding to rows)
     output_lists = []
     output_lists.append([len(output["libs"])])
@@ -153,11 +159,16 @@ def score(output, data):
         assert l['index'] == i
         day_start += l['t']
 
-        for d in range(day_start, data['D']):
-            pass
-            # for bid in lib['ids']
+        if len(lib['ids']) % l['m'] == 0:
+            days_necessary = len(lib['ids']) // l['m']
+        else:
+            days_necessary = len(lib['ids']) // l['m'] + 1
 
-        print('x')
+        if days_necessary > data['D'] - day_start:
+            raise RuntimeError("too many books!")
+
+        for book_id in lib['ids']:
+            score += data['S'][book_id]
 
     return score
 
