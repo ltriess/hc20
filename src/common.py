@@ -129,7 +129,13 @@ def score(output, data):
 
     # do not allow duplicate books!
     all_books = set()
-    for lib in output["libs"]:
+
+    try:
+        output = output['libs']
+    except:
+        pass
+
+    for lib in output:
         if all_books.intersection(lib["ids"]):
             raise RuntimeError(
                 "Duplicate books in output. {}".format(
@@ -137,9 +143,22 @@ def score(output, data):
                 )
             )
         all_books = all_books.union(lib["ids"])
-
     
     score = 0
+
+    day_start = 0
+    for lib in output:
+        i = lib['index']
+        l = data['libs'][i]
+        assert l['index'] == i
+        day_start += l['t']
+
+        for d in range(day_start, data['D']):
+            pass
+            # for bid in lib['ids']
+
+        print('x')
+
     return score
 
 
