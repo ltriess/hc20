@@ -6,79 +6,78 @@ from src.common import load, load_output, save, score
 
 def solution_christoph(data_input):
 
-    # durations = []
-    # for lib in data_input['libs']:
-    #     duration = lib['t']
-    #     duration_for_books = lib['n'] // lib['m']
-    #     if lib['n'] // lib['m'] != 0:
-    #         duration_for_books += 1
-    #     durations.append(duration + duration_for_books)
-    #
-    # print(durations)
-    #
-    # libs = sorted(data_input['libs'], key=lambda k: k['t'])
-    #
-    # day_start = 0
-    # day_total = data_input['D']
-    #
-    # output = []
-    # for lib in libs:
-    #     day_start += lib['t']
-    #     left = day_total - day_start
-    #     if left <= 0:
-    #         break
-    #     truncated = set(list(lib['ids'])[:left * lib['m']])
-    #     lib['ids'] = truncated
-    #     output.append(lib)
-
-    # index -> lib
-    libs = {}
-
     # for score
-    indices = np.argsort(np.asarray(data_input['S']))
+    indices = np.argsort(np.asarray(data_input["S"]))
     indices = indices[::-1]
-    sorted_book_indices = np.arange(len(data_input['S']))[indices]
+    sorted_book_indices = np.arange(len(data_input["S"]))[indices]
 
-    libs = data_input['libs']
-    libs_d = dict(enumerate(data_input['libs']))
+    libs = data_input["libs"]
+    libs_d = dict(enumerate(data_input["libs"]))
     # index -> # book_indices
     arr = {}
+    already_used_days = 0
 
-    D = data_input['D']
+    S = data_input["S"]
 
-    for book_index in tqdm.tqdm(sorted_book_indices[:1000]):
+    for lib in libs_d.values():
+        score = 0
+        for book_id in lib['ids']:
+            score += S[book_id]
+        lib['total_score'] = score
+    # sorted([x['total_score'] for x in libs_d.values()], reverse=True)
+
+    D = data_input["D"]
+
+    for book_index in tqdm.tqdm(sorted_book_indices):
         # check which libs contain this book
         valid_libs = []
         for lib in libs:
-            if book_index in lib['ids']:
+            if book_index in lib["ids"]:
                 valid_libs.append(lib)
 
         if not valid_libs:
             continue
 
         # choose lib
-        valid_libs_indices = set([x['index'] for x in valid_libs])
+        valid_libs_indices = set([x["index"] for x in valid_libs])
 
         valid_and_listed = valid_libs_indices.intersection(arr.keys())
         valid_and_not_listed = valid_libs_indices - valid_and_listed
 
+        assert valid_and_listed or valid_and_not_listed
+
         added = False
-        valid_listed_sorted_by_t = sorted([libs_d[i] for i in valid_and_listed],
-                                          key=lambda x: x['t'])
+        valid_listed_sorted_by_t = sorted(
+            [libs_d[i] for i in valid_and_listed], key=lambda x: x["t"]
+        )
         left = D
-        for vl in valid_listed_sorted_by_t:
-            fit = len(arr[vl['index']]) % vl['m'] == 0
-            count_book_time = len(arr[vl['index']]) // vl['m']
+
+        # if len(valid_listed_sorted_by_t) > 10:
+        #     print('x')
+
+        arr_sorted_by_t = [(x, libs_d[x]['t']) for x in arr.keys()]
+        arr_sorted_by_t = sorted(arr_sorted_by_t, key=lambda x: x[1])
+
+        for vl in arr_sorted_by_t:
+
+            if vl[0] not in valid_and_listed:
+                left -= vl[1]
+                continue
+
+            vl = libs_d[vl[0]]
+
+            fit = len(arr[vl["index"]]) % vl["m"] == 0
+            count_book_time = len(arr[vl["index"]]) // vl["m"]
             if not fit:
                 ## use this library as it will not take a day longer -> still fits
-                arr[vl['index']].add(int(book_index))
+                arr[vl["index"]].add(int(book_index))
                 added = True
                 break
 
-            startup_time = vl['t']
+            startup_time = vl["t"]
             if count_book_time + 1 + startup_time < left:
                 # still fits, use this
-                arr[vl['index']].add(int(book_index))
+                arr[vl["index"]].add(int(book_index))
                 added = True
                 break
 
@@ -88,17 +87,24 @@ def solution_christoph(data_input):
         if added:
             continue
 
+        if not valid_and_not_listed:
+            continue
+
         # not added soo far !
-        valid_unlisted_sorted_by_t = sorted([libs_d[i] for i in valid_and_not_listed],
-                                             key=lambda x: x['t'])
+        valid_unlisted_sorted_by_t = sorted(
+            [libs_d[i] for i in valid_and_not_listed], key=lambda x: x["t"]
+        )
 
         smallest_t_lib = valid_unlisted_sorted_by_t[0]
 
-        if smallest_t_lib['t'] < left:
-            arr[smallest_t_lib['index']] = {int(book_index)}
+        if smallest_t_lib["t"] < D - already_used_days:
+            arr[smallest_t_lib["index"]] = {int(book_index)}
+            already_used_days += smallest_t_lib["t"]
+        # else:
+        #     print("Not adding book {}".format(book_index))
 
-    output = [libs_d[k] for k, v in arr.items()]
-    return output
+    output = [{"ids": v, "index": k} for k, v in arr.items()]
+    return sorted(output, key=lambda x: libs_d[x['index']]['t'])
 
 
 dset_a = "a_example"
@@ -111,8 +117,8 @@ dsets = [dset_a, dset_b, dset_c, dset_d, dset_e, dset_f]
 
 if __name__ == "__main__":
 
-    dsets = dsets[2:3]
-
+    dsets = dsets[5:6]
+    # dsets = dsets[0:1]
     total_score = 0
 
     for dset in dsets:
