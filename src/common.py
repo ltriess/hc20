@@ -104,8 +104,8 @@ def save(output, method_name="example", ds_name="example"):
     output_lists = []
     output_lists.append([len(output['libs'])])
 
-    for lib in output['libs']:
-        output_lists.
+    # for lib in output['libs']:
+    #     output_lists.append([])
 
     writevalues(output_lists, outfilename)
     return s, outfilename
