@@ -55,37 +55,40 @@ def load(ds_name):
     data = {}
     # Todo unpack values into structured dict data
 
-    data['B'] = values[0][0]
-    data['L'] = values[0][1]
-    data['D'] = values[0][2]
+    data["B"] = values[0][0]
+    data["L"] = values[0][1]
+    data["D"] = values[0][2]
 
-    data['S'] = np.asarray(values[1])
+    data["S"] = np.asarray(values[1])
 
-    data['ids'] = []
+    data["ids"] = []
 
-    data['N'] = []
-    data['T'] = []
-    data['M'] = []
+    data["N"] = []
+    data["T"] = []
+    data["M"] = []
 
-    for l in range(data['L']):
+    for l in range(data["L"]):
         n, t, m = values[2 * l + 2]
-        data['ids'].append(values[2 * l + 2 + 1])
-        data['N'].append(n)
-        data['T'].append(t)
-        data['M'].append(m)
+        data["ids"].append(values[2 * l + 2 + 1])
+        data["N"].append(n)
+        data["T"].append(t)
+        data["M"].append(m)
 
-    data['libs'] = [{
-        'index': i,
-        'n': data['N'][i],
-        't': data['T'][i],
-        'm': data['M'][i],
-        'ids': set(data['ids'][i]),
-    } for i in range(data['L'])]
+    data["libs"] = [
+        {
+            "index": i,
+            "n": data["N"][i],
+            "t": data["T"][i],
+            "m": data["M"][i],
+            "ids": set(data["ids"][i]),
+        }
+        for i in range(data["L"])
+    ]
 
-    del data['ids']
-    del data['N']
-    del data['T']
-    del data['M']
+    del data["ids"]
+    del data["N"]
+    del data["T"]
+    del data["M"]
 
     return data
 
@@ -102,11 +105,11 @@ def save(output, method_name="example", ds_name="example"):
     )
     # Todo pack output dict into list of lists of values (corresponding to rows)
     output_lists = []
-    output_lists.append([len(output['libs'])])
+    output_lists.append([len(output["libs"])])
 
-    for lib in output['libs']:
-        output_lists.append([lib['index'], len(lib['ids'])])
-        output_lists.append(list(lib['ids']))
+    for lib in output["libs"]:
+        output_lists.append([lib["index"], len(lib["ids"])])
+        output_lists.append(list(lib["ids"]))
 
     writevalues(output_lists, outfilename)
     return s, outfilename
@@ -123,6 +126,19 @@ def load_output(filename):
 def score(output, data):
     # check if output is valid else raise assertion
     # Todo then compute score and return it
+
+    # do not allow duplicate books!
+    all_books = set()
+    for lib in output["libs"]:
+        if all_books.intersection(lib["ids"]):
+            raise RuntimeError(
+                "Duplicate books in output. {}".format(
+                    all_books.intersection(lib["ids"])
+                )
+            )
+        all_books = all_books.union(lib["ids"])
+
+    
     score = 0
     return score
 
