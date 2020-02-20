@@ -114,8 +114,10 @@ def save(output, method_name="example", ds_name="example"):
     output_lists.append([len(output)])
 
     for lib in output:
-        output_lists.append([lib["index"], len(lib["ids"])])
-        output_lists.append(list(lib["ids"]))
+        book_ids = lib["ids"]
+        assert bool(book_ids)
+        output_lists.append([lib["index"], len(book_ids)])
+        output_lists.append(list(book_ids))
 
     writevalues(output_lists, outfilename)
     return s, outfilename
