@@ -100,7 +100,7 @@ def save(output, method_name="example", ds_name="example"):
         osp.dirname(__file__),
         "..",
         "out",
-        "%s_%s_%06d_%s.out"
+        "%s_%s_%012d_%s.out"
         % (ds_name, method_name, s, get_time_stamp(with_date=False, with_delims=False)),
     )
 
