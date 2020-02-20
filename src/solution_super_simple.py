@@ -4,20 +4,20 @@ from src.common import load, save, score, load_output
 
 
 def solution_super_simple(data_input):
-    return {}
+    return {'libs': []}
 
 
 if __name__ == "__main__":
 
-    # dset = "example"
     dset_a = "a_example"
-    dset_b = "b_small"
-    dset_c = "c_medium"
-    dset_d = "d_quite_big"
-    dset_e = "e_also_big"
-    dsets = [dset_a, dset_b, dset_c, dset_d, dset_e]
+    dset_b = "b_read_on"
+    dset_c = "c_incunabula"
+    dset_d = "d_tough_choices"
+    dset_e = "e_so_many_books"
+    dset_f = "f_libraries_of_the_world"
+    dsets = [dset_a, dset_b, dset_c, dset_d, dset_e, dset_f]
 
-    dsets = dsets[0:1]
+    # dsets = dsets[0:1]
 
     total_score = 0
 
