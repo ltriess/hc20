@@ -2,6 +2,7 @@
 
 import os.path as osp
 import time
+import numpy as np
 
 
 def cast_to_int_float_str(s: str):
@@ -49,10 +50,30 @@ def get_time_stamp(with_date=True, with_delims=False):
 
 
 def load(ds_name):
-    filename = osp.join(osp.dirname(__file__), "..", "in", ds_name + ".in")
+    filename = osp.join(osp.dirname(__file__), "..", "in", ds_name + ".txt")
     values = readvalues(filename)
     data = {}
     # Todo unpack values into structured dict data
+
+    data['B'] = values[0][0]
+    data['L'] = values[0][1]
+    data['D'] = values[0][2]
+
+    data['S'] = np.asarray(values[1])
+
+    data['ids'] = []
+
+    data['N'] = []
+    data['T'] = []
+    data['M'] = []
+
+    for l in range(data['L']):
+        n, t, m = values[2 * l + 2]
+        data['ids'].append(values[2 * l + 2 + 1])
+        data['N'].append(n)
+        data['T'].append(t)
+        data['M'].append(m)
+
     return data
 
 
