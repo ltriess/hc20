@@ -79,7 +79,7 @@ def load(ds_name):
         'n': data['N'][i],
         't': data['T'][i],
         'm': data['M'][i],
-        'ids': data['ids'][i],
+        'ids': set(data['ids'][i]),
     } for i in range(data['L'])]
 
     del data['ids']
@@ -102,6 +102,11 @@ def save(output, method_name="example", ds_name="example"):
     )
     # Todo pack output dict into list of lists of values (corresponding to rows)
     output_lists = []
+    output_lists.append([len(output['libs'])])
+
+    for lib in output['libs']:
+        output_lists.
+
     writevalues(output_lists, outfilename)
     return s, outfilename
 
