@@ -111,9 +111,9 @@ def save(output, method_name="example", ds_name="example"):
 
     # Todo pack output dict into list of lists of values (corresponding to rows)
     output_lists = []
-    output_lists.append([len(output["libs"])])
+    output_lists.append([len(output)])
 
-    for lib in output["libs"]:
+    for lib in output:
         output_lists.append([lib["index"], len(lib["ids"])])
         output_lists.append(list(lib["ids"]))
 
