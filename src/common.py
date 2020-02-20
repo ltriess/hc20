@@ -52,7 +52,7 @@ def load(ds_name):
     filename = osp.join(osp.dirname(__file__), "..", "in", ds_name + ".in")
     values = readvalues(filename)
     data = {}
-    # unpack values into structured dict data
+    # Todo unpack values into structured dict data
     return data
 
 
@@ -66,7 +66,7 @@ def save(output, method_name="example", ds_name="example"):
         "%s_%s_%06d_%s.out"
         % (ds_name, method_name, s, get_time_stamp(with_date=False, with_delims=False)),
     )
-    # pack output dict into list of lists of values (corresponding to rows)
+    # Todo pack output dict into list of lists of values (corresponding to rows)
     output_lists = []
     writevalues(output_lists, outfilename)
     return s, outfilename
@@ -75,14 +75,14 @@ def save(output, method_name="example", ds_name="example"):
 def load_output(filename):
     filepath = osp.join(osp.dirname(__file__), "..", "out", filename)
     values = readvalues(filepath)
-    # unpack list of list of values into output dict
+    # Todo unpack list of list of values into output dict
     output = {}
     return output
 
 
 def score(output, data):
     # check if output is valid else raise assertion
-    # then compute score and return it
+    # Todo then compute score and return it
     score = 0
     return score
 
