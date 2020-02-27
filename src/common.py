@@ -5,6 +5,15 @@ import time
 
 import numpy as np
 
+dset_a = "a_example"
+dset_b = "b_read_on"
+dset_c = "c_incunabula"
+dset_d = "d_tough_choices"
+dset_e = "e_so_many_books"
+dset_f = "f_libraries_of_the_world"
+dsets = [dset_a, dset_b, dset_c, dset_d, dset_e, dset_f]
+rel_dsets = [dset_c, dset_e, dset_f]
+
 
 def cast_to_int_float_str(s: str):
     try:
@@ -94,21 +103,15 @@ def load(ds_name):
     return data
 
 
-def save(output, method_name="example", ds_name="example", postfix=""):
+def save(output, method_name="example", ds_name="example"):
     data = load(ds_name)
     s = score(output, data)
     outfilename = osp.join(
         osp.dirname(__file__),
         "..",
         "out",
-        "%s_%s_%012d%s_%s.out"
-        % (
-            ds_name,
-            method_name,
-            s,
-            postfix,
-            get_time_stamp(with_date=False, with_delims=False),
-        ),
+        "%s_%012d_%s_%s.out"
+        % (ds_name, s, method_name, get_time_stamp(with_date=False, with_delims=False)),
     )
 
     try:
@@ -134,7 +137,15 @@ def load_output(filename):
     filepath = osp.join(osp.dirname(__file__), "..", "out", filename)
     values = readvalues(filepath)
     # Todo unpack list of list of values into output dict
-    output = {}
+    n = values[0][0]
+    values = values[1:]
+    assert len(values) == 2 * n
+    output = []
+    for i in range(n):
+        lib_id, num_books = values[2 * i]
+        assert len(values[2 * i + 1]) == num_books
+        ids = values[2 * i + 1]
+        output.append({"index": lib_id, "ids": ids})
     return output
 
 

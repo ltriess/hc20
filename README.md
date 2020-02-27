@@ -5,6 +5,13 @@
 This repo holds the [Google Hash Code 2020](https://codingcompetitions.withgoogle.com/hashcode) solutions of our team.
 Take a look at the [problem description](problem_statement.pdf).
 
+## Tips for next year
+- use randomness in solutions to get multiple different scores
+
+    pros:
+    - sample from a distribution multiple points to get better max
+    - get a feeling for dataset dependent standard deviations on score to estimate where the greatest gains are possible
+
 ## Team Members
 
 * [Stefan Baur](https://github.com/baurst)

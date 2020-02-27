@@ -132,6 +132,7 @@ dmypy.json
 # davidj2
 setup.cfg
 out
+best_out
 .venv/
 .idea/
 .tags
